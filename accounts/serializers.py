@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
@@ -12,6 +14,14 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("username", "password", "password2", "age", "can_be_contacted", "can_data_be_shared")
+
+    def validate_age(self, value):
+        today = date.today()
+        birth_date = value
+        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+        if age < 15:
+            raise serializers.ValidationError("You must be at least 15 years old to register.")
+        return value
 
     def validate(self, data):
         if data["password"] != data["password2"]:
