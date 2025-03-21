@@ -17,3 +17,18 @@ class Project(models.Model):
     project_type = models.CharField(max_length=25, choices=ProjectType.choices, default=ProjectType.BACKEND)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Contributor(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "project")  # A user can only be a contributor to a project once
+
+    def __str__(self):
+        return f"{self.user} - {self.project}"
