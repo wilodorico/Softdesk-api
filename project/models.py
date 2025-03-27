@@ -57,7 +57,7 @@ class Issue(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="assigned_issues"
     )
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     status = models.CharField(max_length=15, choices=IssueStatus.choices, default=IssueStatus.TODO)
     tag = models.CharField(max_length=15, choices=IssueTag.choices)
     priority = models.CharField(max_length=15, choices=IssuePriority.choices)
