@@ -29,7 +29,40 @@ class Contributor(models.Model):
     added_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("user", "project")  # A user can only be a contributor to a project once
+        unique_together = ("user", "project")
 
     def __str__(self):
         return f"{self.user}"
+
+
+class Issue(models.Model):
+    class IssueStatus(models.TextChoices):
+        TODO = "To Do"
+        IN_PROGRESS = "In Progress"
+        FINISHED = "Finished"
+
+    class IssuePriority(models.TextChoices):
+        LOW = "Low"
+        MEDIUM = "Medium"
+        HIGH = "High"
+
+    class IssueTag(models.TextChoices):
+        BUG = "Bug"
+        FEATURE = "Feature"
+        TASK = "Task"
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="issues")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="assigned_issues"
+    )
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    status = models.CharField(max_length=15, choices=IssueStatus.choices, default=IssueStatus.TODO)
+    tag = models.CharField(max_length=15, choices=IssueTag.choices)
+    priority = models.CharField(max_length=15, choices=IssuePriority.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
