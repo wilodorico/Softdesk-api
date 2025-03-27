@@ -31,4 +31,4 @@ class Contributor(models.Model):
         unique_together = ("user", "project")  # A user can only be a contributor to a project once
 
     def __str__(self):
-        return f"{self.user} - {self.project}"
+        return f"{self.user}"
