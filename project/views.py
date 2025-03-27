@@ -1,8 +1,13 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from project.models import Contributor, Project
-from project.serializers import ContributorSerializer, ProjectCreateSerializer, ProjectDetailSerializer
+from project.models import Contributor, Issue, Project
+from project.serializers import (
+    ContributorSerializer,
+    IssueSerializer,
+    ProjectCreateSerializer,
+    ProjectDetailSerializer,
+)
 
 
 class ProjectViewset(viewsets.ModelViewSet):
@@ -23,3 +28,13 @@ class ContributorViewset(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return Contributor.objects.filter(project__author=user)
+
+
+class IssueViewset(viewsets.ModelViewSet):
+    queryset = Issue.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = IssueSerializer
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        serializer.save(author=user)

@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from rest_framework import serializers
 
-from .models import Contributor, Project
+from .models import Contributor, Issue, Project
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
@@ -53,3 +53,19 @@ class ContributorSerializer(serializers.ModelSerializer):
             return super().create(validated_data)
         except IntegrityError:
             raise serializers.ValidationError({"user": "This user is already a contributor to this project."})
+
+
+class IssueSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source="author.username")
+
+    class Meta:
+        model = Issue
+        fields = "__all__"
+
+    def update(self, instance, validated_data):
+        user = self.context["request"].user
+
+        if instance.project.author != user:
+            raise serializers.ValidationError("You are not authorized to update this issue.")
+
+        return super().update(instance, validated_data)
