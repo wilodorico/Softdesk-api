@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from project.models import Comment, Contributor, Issue, Project
+from project.permissions import IsOwnerOrReadOnly
 from project.serializers import (
     CommentSerializer,
     ContributorSerializer,
@@ -13,7 +14,7 @@ from project.serializers import (
 
 class ProjectViewset(viewsets.ModelViewSet):
     queryset = Project.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -33,7 +34,7 @@ class ContributorViewset(viewsets.ModelViewSet):
 
 class IssueViewset(viewsets.ModelViewSet):
     queryset = Issue.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     serializer_class = IssueSerializer
 
     def perform_create(self, serializer):
@@ -43,7 +44,7 @@ class IssueViewset(viewsets.ModelViewSet):
 
 class CommentViewset(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     serializer_class = CommentSerializer
 
     def perform_create(self, serializer):
