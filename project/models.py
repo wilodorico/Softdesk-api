@@ -2,10 +2,12 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from mixins.timestamp_mixin import TimeStampMixin
+
 User = get_user_model()
 
 
-class Project(models.Model):
+class Project(TimeStampMixin):
     class ProjectType(models.TextChoices):
         BACKEND = "Back-end"
         FRONTEND = "Front-end"
@@ -16,8 +18,6 @@ class Project(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     project_type = models.CharField(max_length=25, choices=ProjectType.choices, default=ProjectType.BACKEND)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -35,7 +35,7 @@ class Contributor(models.Model):
         return f"{self.user}"
 
 
-class Issue(models.Model):
+class Issue(TimeStampMixin):
     class IssueStatus(models.TextChoices):
         TODO = "To Do"
         IN_PROGRESS = "In Progress"
@@ -61,19 +61,15 @@ class Issue(models.Model):
     status = models.CharField(max_length=15, choices=IssueStatus.choices, default=IssueStatus.TODO)
     tag = models.CharField(max_length=15, choices=IssueTag.choices)
     priority = models.CharField(max_length=15, choices=IssuePriority.choices)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
 
-class Comment(models.Model):
+class Comment(TimeStampMixin):
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     description = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Comment by {self.author} on {self.issue}"
