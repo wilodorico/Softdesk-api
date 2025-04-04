@@ -21,6 +21,11 @@ class ProjectViewset(viewsets.ModelViewSet):
             return ProjectCreateSerializer
         return ProjectDetailSerializer
 
+    def perform_create(self, serializer):
+        user = self.request.user
+        project = serializer.save(author=user)
+        Contributor.objects.create(user=user, project=project)
+
 
 class ContributorViewset(viewsets.ModelViewSet):
     queryset = Contributor.objects.all()

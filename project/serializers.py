@@ -9,15 +9,6 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         model = Project
         fields = ("name", "description", "project_type")
 
-    def create(self, validated_data):
-        user = self.context["request"].user
-        project = Project.objects.create(author=user, **validated_data)
-
-        # Add the author to the contributor
-        Contributor.objects.create(user=user, project=project)
-
-        return project
-
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
@@ -26,14 +17,6 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = "__all__"
-
-    def update(self, instance, validated_data):
-        user = self.context["request"].user
-
-        if instance.author != user:
-            raise serializers.ValidationError("You are not authorized to update this project.")
-
-        return super().update(instance, validated_data)
 
 
 class ContributorSerializer(serializers.ModelSerializer):
