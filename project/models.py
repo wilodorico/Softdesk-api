@@ -1,10 +1,9 @@
+import uuid
+
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.db import models
 
 from mixins.timestamp_mixin import TimeStampMixin
-
-User = get_user_model()
 
 
 class Project(TimeStampMixin):
@@ -70,6 +69,7 @@ class Comment(TimeStampMixin):
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     description = models.TextField()
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
         return f"Comment by {self.author} on {self.issue}"
