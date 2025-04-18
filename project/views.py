@@ -36,7 +36,7 @@ class ProjectViewset(viewsets.ModelViewSet):
 
 class ContributorViewset(viewsets.ModelViewSet):
     serializer_class = ContributorSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly, IsContributor]
 
     def get_queryset(self):
         project_id = self.kwargs.get("project_pk")
@@ -76,6 +76,17 @@ class IssueViewset(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         project = get_object_or_404(Project, pk=self.kwargs.get("project_pk"))
+
+        # Check if the assigned_to field is filled
+        assigned_to = serializer.validated_data.get("assigned_to")
+        if assigned_to:
+            # Check if the assigned user is a contributor to the project
+            if not Contributor.objects.filter(project=project, user=assigned_to).exists():
+                raise ValidationError(
+                    {"detail": "You cannot assign the issue to a user who is not a contributor."},
+                    code=status.HTTP_400_BAD_REQUEST,
+                )
+
         serializer.save(author=user, project=project)
 
 
