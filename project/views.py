@@ -5,7 +5,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied, ValidationErro
 from rest_framework.permissions import IsAuthenticated
 
 from project.models import Comment, Contributor, Issue, Project
-from project.permissions import IsAuthorOrReadOnly
+from project.permissions import IsAuthorOrReadOnly, IsContributor
 from project.serializers import (
     CommentSerializer,
     ContributorSerializer,
@@ -18,8 +18,10 @@ User = get_user_model()
 
 
 class ProjectViewset(viewsets.ModelViewSet):
-    queryset = Project.objects.all()
-    permission_classes = [IsAuthorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly, IsContributor]
+
+    def get_queryset(self):
+        return Project.objects.all()
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -64,7 +66,7 @@ class ContributorViewset(viewsets.ModelViewSet):
 
 
 class IssueViewset(viewsets.ModelViewSet):
-    permission_classes = [IsAuthorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly, IsContributor]
     serializer_class = IssueSerializer
 
     def get_queryset(self):
@@ -78,12 +80,14 @@ class IssueViewset(viewsets.ModelViewSet):
 
 
 class CommentViewset(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly, IsContributor]
     serializer_class = CommentSerializer
 
     def get_queryset(self):
+        project_id = self.kwargs.get("project_pk")
         issue_id = self.kwargs.get("issue_pk")
-        return Comment.objects.filter(issue_id=issue_id)
+
+        return Comment.objects.filter(issue__project_id=project_id, issue_id=issue_id)
 
     def perform_create(self, serializer):
         user = self.request.user
