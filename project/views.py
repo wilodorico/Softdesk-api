@@ -1,4 +1,6 @@
-from rest_framework import viewsets
+from django.contrib.auth import get_user_model
+from rest_framework import status, viewsets
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 
 from project.models import Comment, Contributor, Issue, Project
@@ -10,6 +12,8 @@ from project.serializers import (
     ProjectCreateSerializer,
     ProjectDetailSerializer,
 )
+
+User = get_user_model()
 
 
 class ProjectViewset(viewsets.ModelViewSet):
@@ -28,13 +32,32 @@ class ProjectViewset(viewsets.ModelViewSet):
 
 
 class ContributorViewset(viewsets.ModelViewSet):
-    queryset = Contributor.objects.all()
-    permission_classes = [IsAuthenticated]
     serializer_class = ContributorSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        return Contributor.objects.filter(project__author=user)
+        project_id = self.kwargs.get("project_pk")
+        return Contributor.objects.filter(project_id=project_id)
+
+    def perform_create(self, serializer):
+        project_id = self.kwargs.get("project_pk")
+        user_to_add = serializer.validated_data.get("user")
+
+        try:
+            project = Project.objects.get(pk=project_id)
+            user = User.objects.get(pk=user_to_add.id)
+        except (Project.DoesNotExist, User.DoesNotExist):
+            raise NotFound("Project or User not found")
+
+        # Vérification que l'utilisateur est l'auteur du projet
+        if project.author != self.request.user:
+            raise PermissionDenied("You are not authorized to perform this action.")
+
+        # Vérification que l'utilisateur n'est pas déjà contributeur
+        if Contributor.objects.filter(project=project, user=user).exists():
+            raise ValidationError({"detail": "This user is already a contributor."}, code=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save(project=project, user=user)
 
 
 class IssueViewset(viewsets.ModelViewSet):

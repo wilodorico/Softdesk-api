@@ -1,7 +1,9 @@
-from django.db import IntegrityError
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from .models import Comment, Contributor, Issue, Project
+
+User = get_user_model()
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
@@ -23,19 +25,12 @@ class ContributorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contributor
         fields = "__all__"
+        read_only_fields = ("project", "added_on")
 
-    def create(self, validated_data):
-        user_authenticated = self.context["request"].user
-        project = validated_data["project"]
-
-        # Check if the user authenticated is author of the project for which they are trying to add a contributor
-        if project.author != user_authenticated:
-            raise serializers.ValidationError("You are not authorized to add a contributor to this project.")
-
-        try:
-            return super().create(validated_data)
-        except IntegrityError:
-            raise serializers.ValidationError({"user": "This user is already a contributor to this project."})
+    def validate_user(self, value):
+        if not User.objects.filter(pk=value.id).exists():
+            raise serializers.ValidationError("The user does not exist")
+        return value
 
 
 class IssueSerializer(serializers.ModelSerializer):
