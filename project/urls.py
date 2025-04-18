@@ -5,7 +5,7 @@ from rest_framework_nested import routers
 from project.views import CommentViewset, ContributorViewset, IssueViewset, ProjectViewset
 
 router = DefaultRouter()
-router.register(r"projects", ProjectViewset)
+router.register(r"projects", ProjectViewset, basename="projects")
 
 # Nested router
 project_router = routers.NestedSimpleRouter(router, r"projects", lookup="project")
