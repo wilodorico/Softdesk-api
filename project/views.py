@@ -4,7 +4,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied, ValidationErro
 from rest_framework.permissions import IsAuthenticated
 
 from project.models import Comment, Contributor, Issue, Project
-from project.permissions import IsOwnerOrReadOnly
+from project.permissions import IsAuthorOrReadOnly
 from project.serializers import (
     CommentSerializer,
     ContributorSerializer,
@@ -18,7 +18,7 @@ User = get_user_model()
 
 class ProjectViewset(viewsets.ModelViewSet):
     queryset = Project.objects.all()
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsAuthorOrReadOnly]
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -46,14 +46,16 @@ class ContributorViewset(viewsets.ModelViewSet):
         try:
             project = Project.objects.get(pk=project_id)
             user = User.objects.get(pk=user_to_add.id)
-        except (Project.DoesNotExist, User.DoesNotExist):
-            raise NotFound("Project or User not found")
+        except Project.DoesNotExist:
+            raise NotFound("Project not found")
+        except User.DoesNotExist:
+            raise NotFound("User not found")
 
-        # Vérification que l'utilisateur est l'auteur du projet
+        # Check if the user is the author of the project
         if project.author != self.request.user:
             raise PermissionDenied("You are not authorized to perform this action.")
 
-        # Vérification que l'utilisateur n'est pas déjà contributeur
+        # Check if the user is already a contributor
         if Contributor.objects.filter(project=project, user=user).exists():
             raise ValidationError({"detail": "This user is already a contributor."}, code=status.HTTP_400_BAD_REQUEST)
 
@@ -62,7 +64,7 @@ class ContributorViewset(viewsets.ModelViewSet):
 
 class IssueViewset(viewsets.ModelViewSet):
     queryset = Issue.objects.all()
-    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
     serializer_class = IssueSerializer
 
     def perform_create(self, serializer):
@@ -72,7 +74,7 @@ class IssueViewset(viewsets.ModelViewSet):
 
 class CommentViewset(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
-    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
     serializer_class = CommentSerializer
 
     def perform_create(self, serializer):
