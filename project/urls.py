@@ -6,12 +6,13 @@ from project.views import CommentViewset, ContributorViewset, IssueViewset, Proj
 
 router = DefaultRouter()
 router.register(r"projects", ProjectViewset)
-router.register(r"issues", IssueViewset)
 router.register(r"comments", CommentViewset)
 
-# Router imbriqué pour les contributeurs
+# Nested router
 project_router = routers.NestedSimpleRouter(router, r"projects", lookup="project")
 project_router.register(r"contributors", ContributorViewset, basename="project-contributors")
+project_router.register(r"issues", IssueViewset, basename="project-issues")
+
 
 urlpatterns = [
     path("", include(router.urls)),

@@ -34,19 +34,12 @@ class ContributorSerializer(serializers.ModelSerializer):
 
 
 class IssueSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source="author.username")
+    author_name = serializers.ReadOnlyField(source="author.username")
 
     class Meta:
         model = Issue
         fields = "__all__"
-
-    def update(self, instance, validated_data):
-        user = self.context["request"].user
-
-        if instance.author != user:
-            raise serializers.ValidationError("You are not authorized to update this issue.")
-
-        return super().update(instance, validated_data)
+        read_only_fields = ("project", "author")
 
 
 class CommentSerializer(serializers.ModelSerializer):

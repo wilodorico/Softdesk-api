@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -63,13 +64,17 @@ class ContributorViewset(viewsets.ModelViewSet):
 
 
 class IssueViewset(viewsets.ModelViewSet):
-    queryset = Issue.objects.all()
-    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
+    permission_classes = [IsAuthorOrReadOnly]
     serializer_class = IssueSerializer
+
+    def get_queryset(self):
+        project_id = self.kwargs.get("project_pk")
+        return Issue.objects.filter(project_id=project_id)
 
     def perform_create(self, serializer):
         user = self.request.user
-        serializer.save(author=user)
+        project = get_object_or_404(Project, pk=self.kwargs.get("project_pk"))
+        serializer.save(author=user, project=project)
 
 
 class CommentViewset(viewsets.ModelViewSet):
