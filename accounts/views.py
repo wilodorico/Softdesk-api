@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from accounts.permissions import IsSelfOrAdminOrReadOnly
 from accounts.serializers import RegisterUserSerializer, UserSerializer
 
 User = get_user_model()
@@ -9,7 +10,7 @@ User = get_user_model()
 
 class UserViewset(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSelfOrAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.action == "create":
