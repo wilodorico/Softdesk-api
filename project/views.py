@@ -78,10 +78,14 @@ class IssueViewset(viewsets.ModelViewSet):
 
 
 class CommentViewset(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
     permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
     serializer_class = CommentSerializer
 
+    def get_queryset(self):
+        issue_id = self.kwargs.get("issue_pk")
+        return Comment.objects.filter(issue_id=issue_id)
+
     def perform_create(self, serializer):
         user = self.request.user
-        serializer.save(author=user)
+        issue = get_object_or_404(Issue, pk=self.kwargs.get("issue_pk"))
+        serializer.save(author=user, issue=issue)

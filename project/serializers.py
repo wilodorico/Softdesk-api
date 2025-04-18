@@ -48,11 +48,4 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = "__all__"
-
-    def update(self, instance, validated_data):
-        user = self.context["request"].user
-
-        if instance.author != user:
-            raise serializers.ValidationError("You are not authorized to update this comment.")
-
-        return super().update(instance, validated_data)
+        read_only_fields = ("issue", "author")
