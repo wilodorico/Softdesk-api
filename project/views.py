@@ -18,8 +18,6 @@ User = get_user_model()
 
 
 class ProjectViewset(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly, IsContributor]
-
     def get_queryset(self):
         return Project.objects.all()
 
@@ -32,6 +30,15 @@ class ProjectViewset(viewsets.ModelViewSet):
         user = self.request.user
         project = serializer.save(author=user)
         Contributor.objects.create(user=user, project=project)
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [IsAuthenticated()]
+        elif self.action == "retrieve":
+            return [IsAuthenticated(), IsContributor()]
+        elif self.action in ["update", "partial_update", "destroy"]:
+            return [IsAuthenticated(), IsAuthorOrReadOnly()]
+        return [IsAuthenticated()]
 
 
 class ContributorViewset(viewsets.ModelViewSet):
