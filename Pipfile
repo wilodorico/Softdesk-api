@@ -8,6 +8,7 @@ djangorestframework = "*"
 django = "*"
 djangorestframework-simplejwt = "*"
 drf-nested-routers = "*"
+drf-spectacular = "*"
 
 [dev-packages]
 

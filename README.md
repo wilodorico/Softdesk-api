@@ -30,7 +30,7 @@ L’API est conçue pour respecter :
   - Vérification de l’âge minimal (15 ans)
   - Consentement pour la collecte et le partage de données
   - Accès, rectification et suppression du compte
-- **OWASP Top 10** :
+- **OWASP** :
   - Authentification sécurisée (JWT)
   - Autorisation par permissions personnalisées
   - Contrôle d’accès strict à chaque ressource
@@ -100,11 +100,13 @@ pipenv install
 
 ## 🧪 Tests et documentation
 
-Les endpoints peuvent être testés via Postman ou via l’interface DRF : http://localhost:8000/api/
+Les endpoints peuvent être testés via Postman : http://localhost:8000/api/
 
-Documentation future : OpenAPI (Swagger / Redoc)
+Documentation : OpenAPI (Swagger / Redoc)
+- Swagger : http://127.0.0.1:8000/api/schema/swagger-ui/
+- Redoc : http://127.0.0.1:8000/api/schema/redoc/
 
-## 🧠 Auteurs
+## 👤 Auteurs
 
 Projet réalisé dans le cadre de la formation développeur d'application Python chez OpenClassrooms.
 
